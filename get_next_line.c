@@ -6,7 +6,7 @@
 /*   By: rgiraud <rgiraud@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/10 12:37:16 by rgiraud           #+#    #+#             */
-/*   Updated: 2023/11/15 18:38:36 by rgiraud          ###   ########.fr       */
+/*   Updated: 2023/11/15 19:37:26 by rgiraud          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,11 +19,11 @@ int	read_from_fd(int fd, char *buffer, char **stash)
 	bytes_read = read(fd, buffer, BUFFER_SIZE);
 	if (bytes_read > 0)
 	{
-		if (stash[fd])
-			stash[fd] = ft_strjoin(stash[fd], buffer, bytes_read);
+		if (*stash)
+			*stash = ft_strjoin(*stash, buffer, bytes_read);
 		else
-			stash[fd] = ft_strdup(buffer, NULL, bytes_read);
-		if (!stash[fd])
+			*stash = ft_strdup(buffer, NULL, bytes_read);
+		if (!(*stash))
 			return (-1);
 		return (bytes_read);
 	}
@@ -33,7 +33,7 @@ int	read_from_fd(int fd, char *buffer, char **stash)
 		return (-1);
 }
 
-int	ft_realloc(char **stash, int fd, char *new_part)
+int	ft_realloc(char **stash, char *new_part)
 {
 	char	*temp;
 
@@ -45,8 +45,8 @@ int	ft_realloc(char **stash, int fd, char *new_part)
 	}
 	else
 		temp = NULL;
-	free(stash[fd]);
-	stash[fd] = temp;
+	free(*stash);
+	*stash = temp;
 	return (1);
 }
 
@@ -55,25 +55,23 @@ char	*construct_line(char *buffer, int fd, char **stash, int bytes_read)
 	char	*new_part;
 	char	*result;
 
-	while (bytes_read > 0 || find_newline(stash[fd]))
+	while (bytes_read > 0 || find_newline(*stash))
 	{
-		new_part = find_newline(stash[fd]);
+		new_part = find_newline(*stash);
 		if (new_part)
 		{
-			result = ft_strdup(stash[fd], new_part, -1);
-			if (!result || !ft_realloc(stash, fd, new_part))
+			result = ft_strdup(*stash, new_part, -1);
+			if (!result || !ft_realloc(stash, new_part))
 				return (NULL);
 			return (result);
 		}
 		bytes_read = read_from_fd(fd, buffer, stash);
 	}
-	if (bytes_read == 0)
+	if (bytes_read == 0 && *stash)
 	{
-		if (!stash[fd])
-			return (NULL);
-		result = ft_strdup(stash[fd], NULL, -1);
-		free(stash[fd]);
-		stash[fd] = NULL;
+		result = ft_strdup(*stash, NULL, -1);
+		free(*stash);
+		*stash = NULL;
 		return (result);
 	}
 	return (NULL);
@@ -83,52 +81,17 @@ char	*get_next_line(int fd)
 {
 	char		*buffer;
 	char		*result;
-	static char	*stash[FOPEN_MAX];
 	int			bytes_read;
+	static char	*stash;
 
-	if (fd < 0 || BUFFER_SIZE <= 0 || fd >= FOPEN_MAX || read(fd, 0, 0) < 0)
+	if (fd < 0 || BUFFER_SIZE <= 0 || read(fd, 0, 0) < 0)
 		return (NULL);
-	buffer = malloc(BUFFER_SIZE + 1 * sizeof(char));
+	buffer = malloc((BUFFER_SIZE + 1) * sizeof(char));
 	if (!buffer)
 		return (NULL);
 	buffer[BUFFER_SIZE] = '\0';
-	bytes_read = read_from_fd(fd, buffer, stash);
-	result = construct_line(buffer, fd, stash, bytes_read);
+	bytes_read = read_from_fd(fd, buffer, &stash);
+	result = construct_line(buffer, fd, &stash, bytes_read);
 	free(buffer);
 	return (result);
 }
-
-// int	main(void)
-// {
-// 	int		fd;
-// 	char	*line;
-
-// 	fd = open("test.txt", O_RDONLY);
-// 	if (fd == -1)
-// 	{
-// 		perror("Error opening file");
-// 		return (2);
-// 	}
-// 	// while ((line = get_next_line(fd)) != NULL)
-// 	// {
-// 	// 	printf("GETNEXTLINE:%s\n", line);
-// 	// 	free(line);
-// 	// }
-
-// 	line = get_next_line(fd);
-// 	printf("GETNEXTLINE:%s\n", line);
-// 	free(line);
-// 	line = get_next_line(fd);
-// 	printf("GETNEXTLINE:%s\n", line);
-// 	free(line);
-// 	line = get_next_line(fd);
-// 	printf("GETNEXTLINE:%s\n", line);
-// 	free(line);
-
-// 	if (close(fd) == -1)
-// 	{
-// 		perror("Error closing file");
-// 		return (3);
-// 	}
-// 	return (0);
-// }

@@ -1,16 +1,16 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   get_next_line.c                                    :+:      :+:    :+:   */
+/*   get_next_line_bonus.c                              :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: rgiraud <rgiraud@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/10 12:37:16 by rgiraud           #+#    #+#             */
-/*   Updated: 2023/11/15 18:38:36 by rgiraud          ###   ########.fr       */
+/*   Updated: 2023/11/15 19:39:16 by rgiraud          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "get_next_line.h"
+#include "get_next_line_bonus.h"
 
 int	read_from_fd(int fd, char *buffer, char **stash)
 {
@@ -81,10 +81,10 @@ char	*construct_line(char *buffer, int fd, char **stash, int bytes_read)
 
 char	*get_next_line(int fd)
 {
-	char		*buffer;
-	char		*result;
-	static char	*stash[FOPEN_MAX];
-	int			bytes_read;
+	char			*buffer;
+	char			*result;
+	static char		*stash[FOPEN_MAX];
+	int				bytes_read;
 
 	if (fd < 0 || BUFFER_SIZE <= 0 || fd >= FOPEN_MAX || read(fd, 0, 0) < 0)
 		return (NULL);
@@ -97,38 +97,3 @@ char	*get_next_line(int fd)
 	free(buffer);
 	return (result);
 }
-
-// int	main(void)
-// {
-// 	int		fd;
-// 	char	*line;
-
-// 	fd = open("test.txt", O_RDONLY);
-// 	if (fd == -1)
-// 	{
-// 		perror("Error opening file");
-// 		return (2);
-// 	}
-// 	// while ((line = get_next_line(fd)) != NULL)
-// 	// {
-// 	// 	printf("GETNEXTLINE:%s\n", line);
-// 	// 	free(line);
-// 	// }
-
-// 	line = get_next_line(fd);
-// 	printf("GETNEXTLINE:%s\n", line);
-// 	free(line);
-// 	line = get_next_line(fd);
-// 	printf("GETNEXTLINE:%s\n", line);
-// 	free(line);
-// 	line = get_next_line(fd);
-// 	printf("GETNEXTLINE:%s\n", line);
-// 	free(line);
-
-// 	if (close(fd) == -1)
-// 	{
-// 		perror("Error closing file");
-// 		return (3);
-// 	}
-// 	return (0);
-// }
